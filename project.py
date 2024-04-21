@@ -6,21 +6,6 @@ import argparse
 from fpdf import FPDF
 
 
-class SongPdfExporter(FPDF):
-    def __init__(self, path):
-        super().__init__()
-        self.path = path
-
-    def write_song(self, text):
-        self.add_page()
-        # encoded = text.encode('ascii', 'ignore')
-        # decoded = encoded.decode()
-        decoded = text.replace('\u2018', ' ')
-        self.set_font('helvetica', 'B', 20)
-        self.write(10, decoded)
-        self.output(self.path, 'F')
-
-
 class HTMLSongParser(HTMLParser):
     def __init__(self):
         super().__init__()
@@ -103,6 +88,61 @@ class HTMLSongParser(HTMLParser):
         return self.pretty_print()
 
 
+class SongPdfExporter(FPDF):
+    def __init__(self, path):
+        super().__init__()
+        self.path = path
+
+    def default_font(self):
+        self.set_font('helvetica', '', 18)
+
+    def chord(self, txt):
+        self.default_font()
+        txt = txt.replace('\u2018', ' ')
+        width = self.get_string_width(txt)
+        self.set_text_color(220, 50, 50)
+        self.cell(width, txt=txt)
+
+    def song_section(self, txt):
+        self.set_font('helvetica', 'B', 18)
+        txt = txt.replace('\u2018', ' ')
+        self.set_text_color(0, 0, 0)
+        self.cell(0, txt=txt)
+        self.ln(20)
+
+    def lyric(self, txt):
+        self.default_font()
+        txt = txt.replace('\u2018', ' ')
+        width = self.get_string_width(txt)
+        self.set_text_color(0, 0, 0)
+        self.cell(width, txt=txt)
+
+    def write_song(self, song: HTMLSongParser):
+        self.add_page()
+        # encoded = text.encode('ascii', 'ignore')
+        # decoded = encoded.decode()
+
+        self.default_font()
+        # output = ''
+        breaks = set(song.breaks)
+        for key in song.lyrics:
+            if key in breaks:
+                self.ln(20)
+            if key in song.sections:
+                self.song_section(f'{song.sections[key].upper()}')
+            chord = song.lyrics[key]['data']
+            if chord:
+                self.chord(f'[{chord}]')
+            lyrics = song.lyrics[key]['lyrics']
+            if lyrics:
+                self.lyric(f'{lyrics}')
+
+        # decoded = output.replace('\u2018', ' ')
+
+        # self.write(10, decoded)
+        self.output(self.path, 'F')
+
+
 if __name__ == "__main__":
     # colorama init
     init()
@@ -119,10 +159,8 @@ if __name__ == "__main__":
     song_parser = HTMLSongParser()
     song_parser.feed(resp.text)
     if args.output:
-        print(args.output)
-        output = song_parser.print()
         exporter = SongPdfExporter(args.output)
-        exporter.write_song(output)
+        exporter.write_song(song_parser)
     else:
         output = song_parser.pretty_print()
         print(output)
