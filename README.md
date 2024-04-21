@@ -1,5 +1,5 @@
 # Song Chords to PDF
-#### Video Demo:  <URL HERE>
+#### Video Demo: <https://youtu.be/dczkfBc02BU>
 
 #### Description:
 
