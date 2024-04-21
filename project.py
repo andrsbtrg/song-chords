@@ -5,6 +5,29 @@ import argparse
 from fpdf import FPDF
 
 
+def main():
+    # initialize colorama for giving color to std output
+    init()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('url', help='a song url')
+    parser.add_argument(
+        '-o', '--output', help='output.pdf')
+
+    args = parser.parse_args()
+
+    song_url = args.url
+    resp = requests.get(song_url)
+
+    song_parser = HTMLSongParser()
+    song_parser.feed(resp.text)
+    if args.output:
+        exporter = SongPdfExporter(args.output)
+        exporter.write_song(song_parser)
+    else:
+        output = song_parser.pretty_print()
+        print(output)
+
+
 class HTMLSongParser(HTMLParser):
     def __init__(self):
         super().__init__()
@@ -138,23 +161,4 @@ class SongPdfExporter(FPDF):
 
 
 if __name__ == "__main__":
-    # initialize colorama for giving color to std output
-    init()
-    parser = argparse.ArgumentParser()
-    parser.add_argument('url', help='a song url')
-    parser.add_argument(
-        '-o', '--output', help='output.pdf')
-
-    args = parser.parse_args()
-
-    song_url = args.url
-    resp = requests.get(song_url)
-
-    song_parser = HTMLSongParser()
-    song_parser.feed(resp.text)
-    if args.output:
-        exporter = SongPdfExporter(args.output)
-        exporter.write_song(song_parser)
-    else:
-        output = song_parser.pretty_print()
-        print(output)
+    main()
