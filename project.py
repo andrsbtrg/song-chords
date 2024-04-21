@@ -1,7 +1,6 @@
 from html.parser import HTMLParser
 import requests
-from colorama import init
-from colorama import Fore
+from colorama import Fore, init
 import argparse
 from fpdf import FPDF
 
@@ -119,8 +118,6 @@ class SongPdfExporter(FPDF):
 
     def write_song(self, song: HTMLSongParser):
         self.add_page()
-        # encoded = text.encode('ascii', 'ignore')
-        # decoded = encoded.decode()
 
         self.default_font()
         # output = ''
@@ -137,14 +134,11 @@ class SongPdfExporter(FPDF):
             if lyrics:
                 self.lyric(f'{lyrics}')
 
-        # decoded = output.replace('\u2018', ' ')
-
-        # self.write(10, decoded)
         self.output(self.path, 'F')
 
 
 if __name__ == "__main__":
-    # colorama init
+    # initialize colorama for giving color to std output
     init()
     parser = argparse.ArgumentParser()
     parser.add_argument('url', help='a song url')
